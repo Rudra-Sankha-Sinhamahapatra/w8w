@@ -89,7 +89,7 @@ async function processExecution(message: XReadMessage) {
                 console.log(`Executing node ${nodeId} (${node.type})`);
 
                 try {
-                    const result = await runNode(node, context, workflowId);
+                    const result = await runNode(node, context, workflowId, executionId, nodeId);
                     context.$node[nodeId] = result;
 
                     tasksDone++;

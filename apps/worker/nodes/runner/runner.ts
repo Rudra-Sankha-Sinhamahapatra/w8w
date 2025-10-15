@@ -1,10 +1,17 @@
+import { publishEvent } from "../../publish";
 import { useForm } from "../form/useForm";
 import { runGeminiNode } from "../gemini/gemini";
 import { sendEmail } from "../resend";
 import { sendSlack } from "../slack";
 import { sendTelegramMessage } from "../telegram";
 
-export async function runNode(node:any,context: Record<string,any>,workflowId?:string) {
+export async function runNode(
+    node:any,
+    context: Record<string,any>,
+    workflowId?:string,
+    executionId?: string, 
+    nodeId?: string
+) {
     try {
         switch (node.type) {
             case "ResendEmail":
@@ -14,7 +21,7 @@ export async function runNode(node:any,context: Record<string,any>,workflowId?:s
                 return await sendTelegramMessage(node.config, node.credentialsId, context);
 
             case "Gemini":
-                return runGeminiNode(node,context,workflowId);
+                return runGeminiNode(node,context,workflowId, executionId!, nodeId!);
 
             case "Form":
                 return useForm(node,workflowId);

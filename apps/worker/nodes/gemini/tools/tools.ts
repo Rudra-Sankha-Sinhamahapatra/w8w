@@ -13,6 +13,10 @@ function calculatePower(base: number, exponent: number) {
   return Math.pow(base, exponent);
 } 
 
+function generateContent(topic: string, style: string = "neutral", length: number = 300) {
+  return `Here is a ${style} article about "${topic}" with approximately ${length} words. [Content generation logic goes here]`;
+}
+
 export const tools = [
   tool(
     async (input: any) => {
@@ -58,4 +62,25 @@ export const tools = [
       schema: z.object({ base: z.number(), exponent: z.number() }),
     }
   ),
+
+  tool(
+    async (input:any) => {
+      const { topic, style, length } = input;
+      const result = generateContent(topic, style, length);
+      console.log(`Content writing: topic=${topic}, style=${style}, length=${length}`);
+      return String(result)
+    }, 
+    {
+      name: "content_writer",
+         description: `
+      Use this tool to write or generate content on any topic.
+      Ideal for blog posts, LinkedIn posts, tweets, essays, summaries,articles, or creative text generation.
+      The user doesn't need to mention the tool; detect writing intent automatically.`,
+      schema: z.object({
+        topic: z.string().describe("Topic to write about"),
+        style: z.string().optional().describe("Writing style (e.g. formal, casual, neutral)"),
+        length: z.number().optional().describe("Approximate word count"),
+      })
+    }
+  )
 ];

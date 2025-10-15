@@ -5,6 +5,7 @@ import type { NodeStatus } from "../types/node";
 export function useWorkflowEvents(workflowId: string) {
     const [events, setEvents] = useState<WorkflowEvent[]>([]);
     const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>({});
+    const [nodeOutputs, setNodeOutputs] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (!workflowId) return;
@@ -20,17 +21,26 @@ export function useWorkflowEvents(workflowId: string) {
         ws.onmessage = (msg) => {
             try {
                 const event = JSON.parse(msg.data);
+
                 if (event.workflowId === workflowId) {
                     setEvents((prev) => [...prev, event]);
 
-                    if (event.type === "node_started") {
-                        setNodeStatuses((prev) => ({ ...prev, [event.nodeId]: "running" }));
-                    }
-                    if (event.type === "node_succeeded") {
-                        setNodeStatuses((prev) => ({ ...prev, [event.nodeId]: "success" }));
-                    }
-                    if (event.type === "node_failed") {
-                        setNodeStatuses((prev) => ({ ...prev, [event.nodeId]: "failed" }));
+                    switch (event.type) {
+                        case "node_started":
+                            setNodeStatuses((prev) => ({ ...prev, [event.nodeId]: "running" }));
+                            break;
+
+                        case "node_succeeded":
+                            setNodeStatuses((prev) => ({ ...prev, [event.nodeId]: "success" }));
+                            break;
+
+                        case "node_failed":
+                            setNodeStatuses((prev) => ({ ...prev, [event.nodeId]: "failed" }));
+                            break;
+
+                        case "node_output":
+                            setNodeOutputs((p) => ({ ...p, [event.nodeId]: event.output }));
+                            break;
                     }
 
                 }
@@ -53,5 +63,5 @@ export function useWorkflowEvents(workflowId: string) {
 
     }, [workflowId])
 
-    return { events, nodeStatuses }
+    return { events, nodeStatuses, nodeOutputs }
 }

@@ -5,6 +5,7 @@ import type { Edge, Node } from '@xyflow/react';
 import type { FlowNodeData, Workflow, WorkflowCredential } from '../../types/workflow';
 import FormNodeConfig from "./FormNodeConfig";
 import { getAncestorNodes } from "../../utils/getAnscestorNodes";
+import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
 
 interface VariableOption {
   label: string;
@@ -25,6 +26,7 @@ type NodeConfigDialogProps = {
 
 export default function NodeConfigDialog({ node, credentials, onClose, onSave, workflow, nodes, edges }: NodeConfigDialogProps) {
   const [credentialId, setCredentialId] = useState<string>(node.data.credentialsId || "");
+  const [copied, setCopied] = useState<boolean>(false);
 
   const [config, setConfig] = useState<Record<string, any>>(() => {
     const defaultConfig: Record<string, string> = {};
@@ -204,6 +206,7 @@ export default function NodeConfigDialog({ node, credentials, onClose, onSave, w
 
 
   const formEntry = workflow?.form?.find((f) => f.nodeId === node.id) || null;
+
   // console.log("Dialog node.id:", node.id, "workflow form:", workflow?.form);
 
 
@@ -304,19 +307,65 @@ export default function NodeConfigDialog({ node, credentials, onClose, onSave, w
 
 
           {node.type === 'Gemini' && (
-            <div>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={config.memory === true}
-                  onChange={(e) => setConfig({ ...config, memory: e.target.checked })}
-                />
-                Enable Memory
-              </label>
-              <p className="text-sm text-zinc-500">
-                If enabled, Gemini will recall the latest 25 conversations for this workflow.
-              </p>
-            </div>
+            <>
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={config.memory === true}
+                    onChange={(e) => setConfig({ ...config, memory: e.target.checked })}
+                  />
+                  Enable Memory
+                </label>
+                <p className="text-sm text-zinc-500">
+                  If enabled, Gemini will recall the latest 25 conversations for this workflow.
+                </p>
+              </div>
+
+              {(node.data as any)?.output && (
+                <div
+                  className={`relative mt-4 text-sm p-3 max-w-[500px] rounded border ${isDark
+                      ? "bg-zinc-800 border-zinc-700 text-zinc-200"
+                      : "bg-zinc-100 border-zinc-300 text-zinc-900"
+                    }`}
+                >
+                  <strong className="block mb-2">Latest Output</strong>
+
+
+                  <button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText((node.data as any).output);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 1500);
+                      } catch (err) {
+                        console.error("Failed to copy:", err);
+                      }
+                    }}
+                    className="absolute top-2 right-2 p-1 rounded hover:bg-zinc-700/30 transition"
+                    title="Copy output"
+                  >
+                    {copied ? (
+                      <CheckIcon
+                        className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"
+                          } transition-all`}
+                      />
+                    ) : (
+                      <CopyIcon
+                        className={`w-4 h-4 ${isDark ? "text-zinc-400" : "text-zinc-600"
+                          } hover:text-blue-500 transition-all`}
+                      />
+                    )}
+                  </button>
+
+                  {/* Output text */}
+                  <pre className="whitespace-pre-wrap break-words text-xs max-h-[200px] overflow-y-auto pr-6">
+                    {(node.data as any).output}
+                  </pre>
+                </div>
+              )}
+
+            </>
           )}
 
           <div className="flex justify-end gap-2 mt-6">

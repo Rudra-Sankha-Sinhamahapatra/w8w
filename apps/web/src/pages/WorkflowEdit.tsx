@@ -33,7 +33,7 @@ function WorkflowEditContent() {
     const { nodes, edges, onNodesChange, onEdgesChange, onConnect, saveWorkflow, isLoading, workflow } =
         useWorkflowEditor(id);
 
-    const { nodeStatuses } = useWorkflowEvents(id!);
+    const { nodeStatuses, nodeOutputs } = useWorkflowEvents(id!);
 
     const { data, isLoading: isLoadingCredentials } = useCredentials();
     const credentials = data?.credentials ?? [];
@@ -345,6 +345,7 @@ function WorkflowEditContent() {
                         data: {
                             ...n.data,
                             status: nodeStatuses[n.id] ?? "idle",
+                            output: nodeOutputs[n.id] ?? "",
                         },
                     }))}
                     edges={edges}

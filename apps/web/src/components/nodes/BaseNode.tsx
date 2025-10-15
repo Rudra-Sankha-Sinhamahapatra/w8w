@@ -6,7 +6,10 @@ import { nodeIcons } from '../../lib/nodeIcons';
 import type { NodeStatus } from '../../types/node';
 
 type CustomNodeProps = {
-  data: FlowNodeData & { status?: NodeStatus };
+  data: FlowNodeData & {
+    status?: NodeStatus,
+    output?: string,
+  };
   selected?: boolean;
 };
 

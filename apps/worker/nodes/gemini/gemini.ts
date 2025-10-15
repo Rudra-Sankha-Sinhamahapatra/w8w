@@ -4,6 +4,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { tools } from "./tools/tools";
 import prisma from "@w8w/db";
 import { addMemory, getMemory } from "../../utils/memory";
+import { publishEvent } from "../../publish";
 
 function resolveTemplate(template: string, context: Record<string, any>): string {
   if (!template || typeof template !== 'string') {
@@ -17,7 +18,13 @@ function resolveTemplate(template: string, context: Record<string, any>): string
   });
 }
 
-export async function runGeminiNode(node: any, context: any, workflowId?: string) {
+export async function runGeminiNode(
+  node: any, 
+  context: any, 
+  workflowId?: string,
+  executionId?: string,
+  nodeId?: string
+) {
   try {
     let { prompt,memory } = node.config;
     
@@ -89,6 +96,17 @@ export async function runGeminiNode(node: any, context: any, workflowId?: string
       maxIterations: 10 
     });
 
+    if (workflowId && executionId && nodeId) {
+      await publishEvent(workflowId, {
+        type: "node_output",
+        workflowId,
+        executionId,
+        nodeId,
+        nodeType: "Gemini",
+        output: "Thinking..."
+      })
+    }
+
     const result = await executor.invoke({
       input: String(prompt)
     });
@@ -110,6 +128,16 @@ export async function runGeminiNode(node: any, context: any, workflowId?: string
     await addMemory(workflowId, "assistant", rawText);
    }
 
+      if (workflowId && executionId && nodeId) {
+      await publishEvent(workflowId, {
+        type: "node_output",
+        workflowId,
+        executionId,
+        nodeId,
+        nodeType: "Gemini",
+        output: rawText
+      })
+    }
 
       try {
      const parsed = JSON.parse(rawText);
