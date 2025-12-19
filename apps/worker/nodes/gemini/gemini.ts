@@ -53,7 +53,7 @@ export async function runGeminiNode(
 
     const model = new ChatGoogleGenerativeAI({
       apiKey: geminiApiKey,
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-lite",
       temperature: 0.5
     });
 
